@@ -70,7 +70,7 @@ func (kvs KVs) Swap(i, j int) {
 }
 
 func getSortedKvs(client *consulapi.Client) KVs {
-	srcPairs, _, err := client.KV().List("config", nil)
+	srcPairs, _, err := client.KV().List("", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -157,7 +157,7 @@ func diffSrcVsTarget(srcClient, targetClient *consulapi.Client) {
 }
 
 func migrateSrcToTarget(srcClient, targetClient *consulapi.Client) {
-	pairs, meta, err := srcClient.KV().List("config", nil)
+	pairs, meta, err := srcClient.KV().List("", nil)
 	if err != nil {
 		panic(err)
 	}
