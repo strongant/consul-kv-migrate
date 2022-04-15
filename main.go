@@ -11,7 +11,7 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-var srcAddress, srcToken, targetAddress, targetToken, action string
+var srcAddress, srcToken, targetAddress, targetToken, action ,keyPrefix string
 
 func main() {
 	flag.StringVar(&srcAddress, "src-addr", "source-ip:8500", "源 Consul 服务地址")
@@ -19,6 +19,8 @@ func main() {
 	flag.StringVar(&targetAddress, "target-addr", "target-ip:8500", "目标 Consul 服务地址")
 	flag.StringVar(&targetToken, "target-token", "", "目标 Consul Token")
 	flag.StringVar(&action, "action", "diff", "执行动作：diff-对比源和目标 Consul 配置差异，migrate-迁移源到目标并覆盖目标, 目标服务器的多余的 Key 不会被删除")
+	flag.StringVar(&keyPrefix, "key-prefix", "", "标识key前缀，比如:config。默认\"\"")
+
 
 	flag.Parse()
 
@@ -70,7 +72,7 @@ func (kvs KVs) Swap(i, j int) {
 }
 
 func getSortedKvs(client *consulapi.Client) KVs {
-	srcPairs, _, err := client.KV().List("", nil)
+	srcPairs, _, err := client.KV().List(keyPrefix, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -157,7 +159,8 @@ func diffSrcVsTarget(srcClient, targetClient *consulapi.Client) {
 }
 
 func migrateSrcToTarget(srcClient, targetClient *consulapi.Client) {
-	pairs, meta, err := srcClient.KV().List("", nil)
+	// 支持key前缀
+	pairs, meta, err := srcClient.KV().List(keyPrefix, nil)
 	if err != nil {
 		panic(err)
 	}
